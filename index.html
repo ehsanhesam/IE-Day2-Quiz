@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="format-detection" content="telephone=no">
+  <title>Day 2 IE Quiz - Decision Analysis</title>
+  <style>
+    :root {
+      --bg1:#0f172a; --bg2:#1e3a8a; --card:#ffffff; --text:#102030; --muted:#607080;
+      --accent:#2563eb; --accent2:#f97316; --good:#16a34a; --bad:#dc2626;
+    }
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    body { margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif; color:var(--text); background:linear-gradient(135deg,var(--bg1),var(--bg2)); min-height:100vh; }
+    .wrap { width:min(900px,94vw); margin:0 auto; padding:22px 0 38px; }
+    .hero { color:white; text-align:center; padding:18px 12px; }
+    .hero h1 { margin:8px 0 6px; font-size:clamp(28px,6vw,44px); }
+    .hero p { margin:6px 0; opacity:.95; font-size:clamp(15px,3vw,18px); }
+    .card { background:var(--card); border-radius:24px; padding:22px; box-shadow:0 20px 55px rgba(0,0,0,.25); margin:14px 0; }
+    .topline { display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; }
+    .pill { background:#eef2ff; color:#1e3a8a; border-radius:999px; padding:8px 12px; font-weight:700; font-size:14px; }
+    .progress { height:14px; background:#e5e7eb; border-radius:999px; overflow:hidden; margin:14px 0 4px; }
+    .bar { height:100%; width:0%; background:linear-gradient(90deg,var(--accent),var(--accent2)); transition:width .25s; }
+    .question { font-size:clamp(20px,4vw,28px); font-weight:800; line-height:1.25; margin:18px 0; }
+    .options { display:grid; gap:12px; }
+    button { font:inherit; }
+    .option { text-align:left; width:100%; border:2px solid #d9e3f0; background:#f8fafc; border-radius:18px; padding:16px; cursor:pointer; min-height:58px; font-weight:700; color:var(--text); touch-action:manipulation; }
+    .option:active { transform:scale(.99); }
+    .option.correct { border-color:var(--good); background:#dcfce7; }
+    .option.wrong { border-color:var(--bad); background:#fee2e2; }
+    .feedback { min-height:44px; margin:16px 0 6px; font-weight:700; }
+    .feedback.good { color:var(--good); }
+    .feedback.bad { color:var(--bad); }
+    .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:16px; }
+    .primary,.secondary { border:0; border-radius:16px; padding:14px 18px; font-weight:900; cursor:pointer; min-height:52px; }
+    .primary { background:var(--accent); color:white; }
+    .secondary { background:#e5e7eb; color:#111827; }
+    input { width:100%; padding:15px; border:2px solid #d1d5db; border-radius:14px; font-size:18px; margin:10px 0; }
+    .score { font-size:clamp(30px,7vw,56px); font-weight:900; text-align:center; color:#1e3a8a; }
+    .small { color:var(--muted); font-size:14px; }
+    .badge { display:inline-block; margin:6px; padding:8px 10px; background:#fff7ed; border:1px solid #fed7aa; border-radius:999px; font-weight:700; }
+    .footer { text-align:center; color:white; opacity:.85; font-size:13px; padding:10px; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hero">
+    <div style="font-size:46px;">🎲 🌳 🛢️</div>
+    <h1>Decision Analysis Challenge</h1>
+    <p>Day 2 - Introduction to Industrial Engineering</p>
+    <p>Can you think like an Industrial Engineer under uncertainty?</p>
+  </div>
+
+  <div id="startCard" class="card">
+    <h2>Welcome, decision maker!</h2>
+    <p>Enter your name or team name. Then answer 12 quick questions. Read carefully: some answers are designed to trick fast guessers.</p>
+    <input id="player" maxlength="40" placeholder="Team name, e.g., Oil Detectives">
+    <div class="actions"><button class="primary" id="startBtn" type="button">Start quiz 🚀</button></div>
+    <p class="small">Tip for iPhone/iPad: open this link in Safari for best results.</p>
+  </div>
+
+  <div id="quizCard" class="card" style="display:none;">
+    <div class="topline"><span class="pill" id="qNum">Question 1/12</span><span class="pill" id="scorePill">Score: 0</span></div>
+    <div class="progress"><div id="bar" class="bar"></div></div>
+    <div id="question" class="question"></div>
+    <div id="options" class="options"></div>
+    <div id="feedback" class="feedback"></div>
+    <div class="actions"><button class="primary" id="nextBtn" type="button" style="display:none;">Next question ➜</button></div>
+  </div>
+
+  <div id="resultCard" class="card" style="display:none;">
+    <h2 style="text-align:center;">Result</h2>
+    <div class="score" id="finalScore"></div>
+    <p id="finalMsg" style="text-align:center;font-size:20px;font-weight:800;"></p>
+    <div id="badges" style="text-align:center;"></div>
+    <p class="small" style="text-align:center;">Take a screenshot and show your instructor if requested.</p>
+    <div class="actions" style="justify-content:center;">
+      <button class="primary" id="retryBtn" type="button">Try again 🔁</button>
+      <button class="secondary" id="reviewBtn" type="button">Review tips 💡</button>
+    </div>
+    <div id="tips" style="display:none; margin-top:16px;">
+      <h3>Three things to remember</h3>
+      <ul>
+        <li>Expected value is an average over possible futures, not a guaranteed result.</li>
+        <li>Decision trees are drawn left-to-right but solved right-to-left.</li>
+        <li>Bayes rule updates belief when new evidence arrives.</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="footer">Made for LYOFN 021 - Day 2 Decision Analysis</div>
+</div>
+<script>
+(function () {
+  var QUESTIONS = [{"q": "You are an IE decision detective. What is the first thing you should clarify in a decision problem?", "options": ["The objective: what we are trying to achieve", "The color of the presentation slides", "The name of the software company", "The longest possible formula"], "answer": 0, "why": "A good decision model starts by knowing the objective."}, {"q": "In the oil-well example, drilling gives $190,000 if oil exists and -$10,000 if not. If the chance of oil is 10%, what is the expected profit of drilling?", "options": ["$0", "$10,000", "$19,000", "$190,000"], "answer": 1, "why": "0.10 × 190,000 + 0.90 × (-10,000) = 10,000."}, {"q": "A decision tree is usually drawn from left to right. How is it solved?", "options": ["Randomly, like a game of chance", "From the middle outward", "From right to left", "Only by computer software"], "answer": 2, "why": "We fold back the tree from the final payoffs toward the first decision."}, {"q": "At a chance node, the probabilities of all possible outcomes should add up to:", "options": ["10%", "50%", "90%", "100%"], "answer": 3, "why": "The possible chance outcomes from one node must cover all possibilities."}, {"q": "Which statement best describes sensitivity analysis?", "options": ["Testing how the best decision changes when an input changes", "Changing answers until we like the result", "Deleting uncertainty from the problem", "Asking only one person for advice"], "answer": 0, "why": "Sensitivity analysis checks whether the conclusion is robust to input changes."}, {"q": "In the oil example, the break-even probability of finding oil is 5%. What should we do if the probability is 3%?", "options": ["Always drill", "Do not drill based on expected profit", "Flip a coin", "Buy two oil wells"], "answer": 1, "why": "Below 5%, the expected value of drilling is negative."}, {"q": "Perfect information is valuable because it can help us:", "options": ["Make uncertainty look more beautiful", "Avoid all future problems forever", "Choose differently depending on the true state of nature", "Ignore probabilities"], "answer": 2, "why": "Perfect information reveals the true state before we choose."}, {"q": "In the consultant example, the consultant is imperfect. This means:", "options": ["The consultant is always wrong", "The consultant is always right", "The consultant has no effect on decisions", "The report can be good or bad, but may contain mistakes"], "answer": 3, "why": "Imperfect information can be useful even when it is not 100% accurate."}, {"q": "Bayesian updating is like:", "options": ["Updating your belief after receiving new evidence", "Forgetting all previous information", "Choosing the most expensive option", "Making decisions without data"], "answer": 0, "why": "Bayes rule combines prior probability and new evidence."}, {"q": "A rare condition affects 1 in 10,000 people. Even with a very accurate test, why can a positive result be less certain than students expect?", "options": ["Because math is broken", "Because false positives can be numerous when the healthy group is huge", "Because rare conditions cannot be tested", "Because 98% always means 98% infected"], "answer": 1, "why": "The base rate matters: a huge number of not-infected people can create many false positives."}, {"q": "Which one is a decision, not an uncertainty?", "options": ["Whether oil exists", "Whether the consultant report is good", "Whether to drill or not drill", "Whether the test gives a false positive"], "answer": 2, "why": "A decision is something we choose; the others are uncertain events."}, {"q": "A good decision may still lead to a bad outcome because:", "options": ["Good decisions are useless", "Decision analysis removes responsibility", "Decision trees never work", "Uncertainty and luck still exist"], "answer": 3, "why": "Decision analysis improves the chance of success, but cannot control the future."}];
+  var current = 0;
+  var score = 0;
+  var answered = false;
+  var player = '';
+  var letters = ['A','B','C','D'];
+
+  function byId(id) { return document.getElementById(id); }
+  function show(id) { byId(id).style.display = 'block'; }
+  function hide(id) { byId(id).style.display = 'none'; }
+  function setText(id, text) { byId(id).textContent = text; }
+  function trimText(value) { return String(value || '').replace(/^\s+|\s+$/g, ''); }
+
+  function startQuiz() {
+    player = trimText(byId('player').value) || 'Decision Maker';
+    current = 0;
+    score = 0;
+    answered = false;
+    hide('startCard');
+    hide('resultCard');
+    show('quizCard');
+    renderQuestion();
+  }
+
+  function renderQuestion() {
+    answered = false;
+    var q = QUESTIONS[current];
+    setText('qNum', 'Question ' + (current + 1) + '/' + QUESTIONS.length);
+    setText('scorePill', 'Score: ' + score);
+    byId('bar').style.width = Math.round((current) / QUESTIONS.length * 100) + '%';
+    setText('question', q.q);
+    byId('feedback').className = 'feedback';
+    setText('feedback', '');
+    hide('nextBtn');
+    var box = byId('options');
+    while (box.firstChild) { box.removeChild(box.firstChild); }
+    for (var i = 0; i < q.options.length; i++) {
+      var btn = document.createElement('button');
+      btn.className = 'option';
+      btn.type = 'button';
+      btn.setAttribute('data-index', String(i));
+      btn.appendChild(document.createTextNode(letters[i] + '. ' + q.options[i]));
+      btn.onclick = choose;
+      box.appendChild(btn);
+    }
+  }
+
+  function choose(evt) {
+    if (answered) { return; }
+    answered = true;
+    var target = evt.currentTarget || evt.srcElement;
+    var selected = parseInt(target.getAttribute('data-index'), 10);
+    var q = QUESTIONS[current];
+    var buttons = byId('options').getElementsByTagName('button');
+    for (var i = 0; i < buttons.length; i++) {
+      buttons[i].disabled = true;
+      if (i === q.answer) { buttons[i].className = buttons[i].className + ' correct'; }
+    }
+    if (selected === q.answer) {
+      score++;
+      byId('feedback').className = 'feedback good';
+      setText('feedback', '✅ Correct! ' + q.why);
+    } else {
+      target.className = target.className + ' wrong';
+      byId('feedback').className = 'feedback bad';
+      setText('feedback', '❌ Not quite. ' + q.why);
+    }
+    setText('scorePill', 'Score: ' + score);
+    show('nextBtn');
+  }
+
+  function nextQuestion() {
+    current++;
+    if (current >= QUESTIONS.length) { finish(); }
+    else { renderQuestion(); }
+  }
+
+  function finish() {
+    hide('quizCard');
+    show('resultCard');
+    byId('bar').style.width = '100%';
+    setText('finalScore', score + ' / ' + QUESTIONS.length);
+    var pct = score / QUESTIONS.length;
+    var msg;
+    if (pct >= 0.90) { msg = '🏆 ' + player + ', you are a Decision Analysis Champion!'; }
+    else if (pct >= 0.70) { msg = '🌟 Great work, ' + player + '! You think systematically.'; }
+    else if (pct >= 0.50) { msg = '👍 Good start, ' + player + '. Review expected value and Bayes rule.'; }
+    else { msg = '💪 Keep practicing, ' + player + '. Decision analysis becomes easier with examples.'; }
+    setText('finalMsg', msg);
+    byId('badges').innerHTML = '<span class="badge">Expected Value</span><span class="badge">Decision Trees</span><span class="badge">Bayes Rule</span>';
+  }
+
+  function retry() {
+    hide('resultCard');
+    show('startCard');
+  }
+
+  function reviewTips() {
+    var t = byId('tips');
+    t.style.display = (t.style.display === 'none' || t.style.display === '') ? 'block' : 'none';
+  }
+
+  function init() {
+    byId('startBtn').onclick = startQuiz;
+    byId('nextBtn').onclick = nextQuestion;
+    byId('retryBtn').onclick = retry;
+    byId('reviewBtn').onclick = reviewTips;
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init, false);
+  } else {
+    init();
+  }
+}());
+</script>
+</body>
+</html>
